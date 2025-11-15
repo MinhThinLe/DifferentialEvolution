@@ -1,4 +1,5 @@
 use rand::prelude::*;
+use std::f32::consts::{E, PI};
 
 pub struct DEConfig {
     population_size: usize,
@@ -7,6 +8,7 @@ pub struct DEConfig {
     seed: u64,
 }
 
+#[derive(Clone)]
 struct Agent {
     data: Vec<f32>,
 }
@@ -23,6 +25,23 @@ impl Agent {
             data: data.to_vec(),
         }
     }
+
+    fn mutate(&mut self, neighbors: &[Agent], rng: &mut SmallRng, de_config: &DEConfig) {
+        let r_index = rng.random_range(0..self.data.len());
+        for (index, agent) in self.data.iter_mut().enumerate() {
+            let random = rng.random::<f32>();
+            if index != r_index && random > de_config.crossover_compatibility {
+                continue;
+            }
+            *agent = neighbors[0].data[index]
+                + de_config.differential_weight
+                    * (neighbors[1].data[index] - neighbors[1].data[index]);
+        }
+    }
+
+    fn fitness(&self) -> f32 {
+        ackley_function(self.data[0], self.data[1])
+    }
 }
 
 impl Default for DEConfig {
@@ -31,7 +50,7 @@ impl Default for DEConfig {
             population_size: 100,
             crossover_compatibility: 0.9,
             differential_weight: 0.8,
-            seed: 0
+            seed: 0,
         }
     }
 }
@@ -68,15 +87,77 @@ impl DifferentialEvolution {
         let mut agents = Vec::with_capacity(config.population_size);
 
         for _ in 0..config.population_size {
-            let agent = Agent::with_data(&vec![rng.random::<f32>(), rng.random::<f32>()]);
+            let agent = Agent::with_data(&[rng.random::<f32>(), rng.random::<f32>()]);
             agents.push(agent);
         }
+
+        //println!("{:?}", agents[0].data);
 
         Self {
             config: config,
             agents,
-            randomizer: rng
+            randomizer: rng,
         }
     }
 
+    pub fn get_fittest_candidate(&self) -> Option<f32> {
+        self.agents.iter().map(|agent| agent.fitness()).reduce(f32::max)
+    }
+
+    pub fn step(&mut self) {
+        for index in 0..self.agents.len() {
+            let indices =
+                gen_range_unique(&mut self.randomizer, index, self.config.population_size);
+            let mut candidate = self.agents[index].clone();
+
+            let baseline = candidate.fitness();
+            let references = [
+                self.agents[indices[0]].clone(),
+                self.agents[indices[1]].clone(),
+                self.agents[indices[2]].clone(),
+            ];
+
+            candidate.mutate(&references, &mut self.randomizer, &self.config);
+
+            if candidate.fitness() > baseline {
+                continue;
+            }
+
+            *self.agents.get_mut(index).unwrap() = candidate
+        }
+    }
+}
+
+#[test]
+fn ackley_test() {
+    assert_eq!(ackley_function(0.0, 0.0), 0.0);
+}
+
+// https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_constrained_optimization
+fn ackley_function(x: f32, y: f32) -> f32 {
+    -20.0 * E.powf(-0.2 * (0.5 * (x * x + y * y)).sqrt())
+        - E.powf(0.5 * ((2.0 * PI * x).cos() + (2.0 * PI * y).cos()))
+        + E
+        + 20.0
+}
+
+fn gen_range_unique(rng: &mut SmallRng, exclude: usize, max: usize) -> [usize; 3] {
+    loop {
+        let candidate: Vec<usize> = (0..3).map(|_| rng.random_range(0..max)).collect();;
+
+        for element in candidate.iter() {
+            let count = candidate
+                .iter()
+                .map(|elem| (elem == element) as u8)
+                .sum::<u8>();
+            if count > 1 {
+                continue;
+            }
+        }
+        if candidate.contains(&exclude) {
+            continue;
+        }
+
+        return [candidate[0], candidate[1], candidate[2]];
+    }
 }

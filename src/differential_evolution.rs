@@ -26,16 +26,17 @@ impl Agent {
         }
     }
 
-    fn mutate(&mut self, neighbors: &[Agent], rng: &mut SmallRng, de_config: &DEConfig) {
-        let r_index = rng.random_range(0..self.data.len());
+    // https://en.wikipedia.org/wiki/Differential_evolution#Algorithm
+    fn mutate(&mut self, references: &[Agent], rng: &mut SmallRng, de_config: &DEConfig) {
+        let r_index = rng.random_range(0..self.data.len()); // IDK how to name this, ask Wikipedia
         for (index, agent) in self.data.iter_mut().enumerate() {
-            let random = rng.random::<f32>();
-            if index != r_index && random > de_config.crossover_compatibility {
+            if index != r_index && rng.random::<f32>() > de_config.crossover_compatibility {
                 continue;
             }
-            *agent = neighbors[0].data[index]
+            // y_i = a_i + F * (b_i - c_i)
+            *agent = references[0].data[index]
                 + de_config.differential_weight
-                    * (neighbors[1].data[index] - neighbors[1].data[index]);
+                    * (references[1].data[index] - references[1].data[index]);
         }
     }
 
@@ -87,11 +88,8 @@ impl DifferentialEvolution {
         let mut agents = Vec::with_capacity(config.population_size);
 
         for _ in 0..config.population_size {
-            let agent = Agent::with_data(&[rng.random::<f32>(), rng.random::<f32>()]);
-            agents.push(agent);
+            agents.push(Agent::with_data(&[rng.random::<f32>(), rng.random::<f32>()]));
         }
-
-        //println!("{:?}", agents[0].data);
 
         Self {
             config: config,
@@ -109,7 +107,6 @@ impl DifferentialEvolution {
             let indices =
                 gen_range_unique(&mut self.randomizer, index, self.config.population_size);
             let mut candidate = self.agents[index].clone();
-
             let baseline = candidate.fitness();
             let references = [
                 self.agents[indices[0]].clone(),
@@ -128,11 +125,6 @@ impl DifferentialEvolution {
     }
 }
 
-#[test]
-fn ackley_test() {
-    assert_eq!(ackley_function(0.0, 0.0), 0.0);
-}
-
 // https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_constrained_optimization
 fn ackley_function(x: f32, y: f32) -> f32 {
     -20.0 * E.powf(-0.2 * (0.5 * (x * x + y * y)).sqrt())
@@ -143,8 +135,9 @@ fn ackley_function(x: f32, y: f32) -> f32 {
 
 fn gen_range_unique(rng: &mut SmallRng, exclude: usize, max: usize) -> [usize; 3] {
     loop {
-        let candidate: Vec<usize> = (0..3).map(|_| rng.random_range(0..max)).collect();;
+        let candidate: Vec<usize> = (0..3).map(|_| rng.random_range(0..max)).collect();
 
+        // Check for collisions within the generated array
         for element in candidate.iter() {
             let count = candidate
                 .iter()

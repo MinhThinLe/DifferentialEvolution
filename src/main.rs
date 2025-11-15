@@ -11,7 +11,7 @@ fn main() {
     let mut differential_evolution = DifferentialEvolution::new(config);
 
     println!("Before: {:?}", differential_evolution.get_fittest_candidate().unwrap());
-    for _ in 0..1000 {
+    for _generation in 0..1000 {
         differential_evolution.step();
     }
     println!("After: {:?}", differential_evolution.get_fittest_candidate().unwrap());

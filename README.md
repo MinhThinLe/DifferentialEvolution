@@ -1,0 +1,30 @@
+# Differential Evolution
+
+A quick and dirty implementation of the Differential Evolution algorithm
+hastily thrown together in an afternoon.
+
+## Performance
+
+Quite garbage. As mentioned above, it was haphazardly thrown together with little
+regards for efficency. 
+
+## How to run
+
+- Requirements
+    - Cargo
+    - The rest of the Rust toolchain
+    - A computer (Obviously)
+    - An internet connection (To download dependencies, otherwise not required)
+
+- Compilation instructions
+    - Clone the repo
+    - Cd into it
+    - `cargo run` (Optionally append the --release flag for better runtime
+      performance)
+
+## Special thanks
+
+- Wikipedia, for their [excellent article](https://en.wikipedia.org/wiki/Differential_evolution)
+  on the topic.
+- People behind the [rust-random](https://github.com/rust-random) organization,
+  for the [random number generation library](https://crates.io/crates/rand) used in the project.

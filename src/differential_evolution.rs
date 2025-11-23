@@ -138,11 +138,19 @@ impl DifferentialEvolution {
 }
 
 // https://en.wikipedia.org/wiki/Test_functions_for_optimization#Test_functions_for_constrained_optimization
+#[allow(dead_code)]
 fn ackley_function(x: f32, y: f32) -> f32 {
     -20.0 * E.powf(-0.2 * (0.5 * (x * x + y * y)).sqrt())
         - E.powf(0.5 * ((2.0 * PI * x).cos() + (2.0 * PI * y).cos()))
         + E
         + 20.0
+}
+
+#[allow(dead_code)]
+fn rastrigin_function(array: &[f32]) -> f32 {
+    const A: f32 = 10.0;
+    let sum: f32 = array.iter().map(|x| x * x - A * (2.0 * PI * x).cos()).sum();
+    A * array.len() as f32 + sum
 }
 
 fn gen_range_unique(rng: &mut SmallRng, exclude: usize, max: usize) -> [usize; 3] {

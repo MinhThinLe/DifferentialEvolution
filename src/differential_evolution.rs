@@ -6,6 +6,7 @@ pub struct DEConfig {
     population_size: usize,
     crossover_compatibility: f32,
     differential_weight: f32,
+    dimensions: u32,
     seed: u64,
 }
 
@@ -52,6 +53,7 @@ impl Default for DEConfig {
             population_size: 100,
             crossover_compatibility: 0.9,
             differential_weight: 0.8,
+            dimensions: 2,
             seed: 0,
         }
     }
@@ -81,6 +83,11 @@ impl DEConfig {
         self.seed = seed;
         self
     }
+
+    pub fn set_dimensions(mut self, dimensions: u32) -> Self {
+        self.dimensions = dimensions;
+        self
+    }
 }
 
 impl DifferentialEvolution {
@@ -89,10 +96,8 @@ impl DifferentialEvolution {
         let mut agents = Vec::with_capacity(config.population_size);
 
         for _ in 0..config.population_size {
-            agents.push(Agent::with_data(&[
-                rng.random::<f32>(),
-                rng.random::<f32>(),
-            ]));
+            let agent_data: Vec<f32> = (0..config.dimensions).map(|_| rng.random()).collect();
+            agents.push(Agent::with_data(&agent_data));
         }
 
         Self {

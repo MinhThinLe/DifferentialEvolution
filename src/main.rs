@@ -11,7 +11,7 @@ fn main() {
         .set_seed(1235);
     let mut differential_evolution = DifferentialEvolution::new(config);
     
-    for _generation in 0..50 {
+    for _generation in 0..500 {
         println!("{}", differential_evolution.get_fittest_candidate().unwrap());
         differential_evolution.step();
     }

@@ -43,7 +43,8 @@ impl Agent {
     }
 
     fn fitness(&self) -> f32 {
-        ackley_function(self.data[0], self.data[1])
+        // ackley_function(self.data[0], self.data[1])
+        rastrigin_function(&self.data)
     }
 }
 

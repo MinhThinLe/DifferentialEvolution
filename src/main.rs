@@ -5,14 +5,13 @@ use differential_evolution::*;
 fn main() {
     let config = DEConfig::new()
         .set_population(250)
-        .set_differential_weight(0.5)
-        .set_crossover_compatibility(0.75)
+        .set_differential_weight(0.8)
+        .set_crossover_compatibility(0.9)
         .set_seed(1235);
     let mut differential_evolution = DifferentialEvolution::new(config);
 
-    println!("Before: {:?}", differential_evolution.get_fittest_candidate().unwrap());
-    for _generation in 0..1000 {
+    for _generation in 0..50 {
+        println!("{}", differential_evolution.get_fittest_candidate().unwrap());
         differential_evolution.step();
     }
-    println!("After: {:?}", differential_evolution.get_fittest_candidate().unwrap());
 }

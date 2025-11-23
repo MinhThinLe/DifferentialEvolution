@@ -1,6 +1,7 @@
 use rand::prelude::*;
 use std::f32::consts::{E, PI};
 
+#[derive(Debug)]
 pub struct DEConfig {
     population_size: usize,
     crossover_compatibility: f32,
@@ -29,14 +30,14 @@ impl Agent {
     // https://en.wikipedia.org/wiki/Differential_evolution#Algorithm
     fn mutate(&mut self, references: &[Agent], rng: &mut SmallRng, de_config: &DEConfig) {
         let r_index = rng.random_range(0..self.data.len()); // IDK how to name this, ask Wikipedia
-        for (index, agent) in self.data.iter_mut().enumerate() {
+        for (index, agent_data) in self.data.iter_mut().enumerate() {
             if index != r_index && rng.random::<f32>() > de_config.crossover_compatibility {
                 continue;
             }
             // y_i = a_i + F * (b_i - c_i)
-            *agent = references[0].data[index]
-                + de_config.differential_weight
-                    * (references[1].data[index] - references[1].data[index]);
+            *agent_data = references[0].data[index]
+                + (de_config.differential_weight
+                    * (references[1].data[index] - references[2].data[index]));
         }
     }
 
@@ -88,7 +89,10 @@ impl DifferentialEvolution {
         let mut agents = Vec::with_capacity(config.population_size);
 
         for _ in 0..config.population_size {
-            agents.push(Agent::with_data(&[rng.random::<f32>(), rng.random::<f32>()]));
+            agents.push(Agent::with_data(&[
+                rng.random::<f32>(),
+                rng.random::<f32>(),
+            ]));
         }
 
         Self {
@@ -99,7 +103,10 @@ impl DifferentialEvolution {
     }
 
     pub fn get_fittest_candidate(&self) -> Option<f32> {
-        self.agents.iter().map(|agent| agent.fitness()).reduce(f32::max)
+        self.agents
+            .iter()
+            .map(|agent| agent.fitness())
+            .reduce(f32::max)
     }
 
     pub fn step(&mut self) {

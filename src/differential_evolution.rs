@@ -11,7 +11,7 @@ pub struct DEConfig {
 }
 
 #[derive(Clone)]
-struct Agent {
+pub struct Agent {
     data: Vec<f32>,
 }
 
@@ -42,7 +42,7 @@ impl Agent {
         }
     }
 
-    fn fitness(&self) -> f32 {
+    pub fn fitness(&self) -> f32 {
         // ackley_function(self.data[0], self.data[1])
         rastrigin_function(&self.data)
     }
@@ -108,11 +108,13 @@ impl DifferentialEvolution {
         }
     }
 
-    pub fn get_fittest_candidate(&self) -> Option<f32> {
-        self.agents
+    pub fn get_fittest_candidate(&self) -> Option<&Agent> {
+        let (index, _agent) = self.agents
             .iter()
-            .map(|agent| agent.fitness())
-            .reduce(f32::max)
+            .enumerate()
+            .map(|(index, agent)| (index, agent.fitness()))
+            .max_by(|max_yet, agent| f32::total_cmp(&max_yet.1, &agent.1))?;
+        self.agents.get(index)
     }
 
     pub fn step(&mut self) {

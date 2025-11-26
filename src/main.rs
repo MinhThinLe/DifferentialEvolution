@@ -12,7 +12,7 @@ fn main() {
     let mut differential_evolution = DifferentialEvolution::new(config);
     
     for _generation in 0..500 {
-        println!("{}", differential_evolution.get_fittest_candidate().unwrap());
+        println!("{}", differential_evolution.get_fittest_candidate().unwrap().fitness());
         differential_evolution.step();
     }
 }

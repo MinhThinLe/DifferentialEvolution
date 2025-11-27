@@ -33,6 +33,7 @@ impl Agent {
         let r_index = rng.random_range(0..self.data.len()); // IDK how to name this, ask Wikipedia
         for (index, agent_data) in self.data.iter_mut().enumerate() {
             if index != r_index && rng.random::<f32>() > de_config.crossover_compatibility {
+                *agent_data = references[0].data[index];
                 continue;
             }
             // y_i = a_i + F * (b_i - c_i)
@@ -43,8 +44,8 @@ impl Agent {
     }
 
     pub fn fitness(&self) -> f32 {
-        ackley_function(self.data[0], self.data[1])
-        //rastrigin_function(&self.data)
+        //ackley_function(self.data[0], self.data[1])
+        rastrigin_function(&self.data)
     }
 }
 

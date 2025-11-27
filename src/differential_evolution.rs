@@ -1,7 +1,7 @@
 use rand::prelude::*;
 use std::f32::consts::{E, PI};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DEConfig {
     population_size: usize,
     crossover_compatibility: f32,
@@ -43,8 +43,8 @@ impl Agent {
     }
 
     pub fn fitness(&self) -> f32 {
-        // ackley_function(self.data[0], self.data[1])
-        rastrigin_function(&self.data)
+        ackley_function(self.data[0], self.data[1])
+        //rastrigin_function(&self.data)
     }
 }
 

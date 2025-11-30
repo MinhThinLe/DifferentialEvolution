@@ -1,7 +1,6 @@
 # Differential Evolution
 
-A quick and dirty implementation of the Differential Evolution algorithm
-hastily thrown together in an afternoon.
+A quick and dirty implementation of the Differential Evolution algorithm.
 
 ## Performance
 
@@ -19,9 +18,17 @@ regards for efficency.
 - Compilation instructions
     - Clone the repo
     - Cd into it
-    - `cargo run` (Optionally append the --release flag for better runtime
+    - `cargo build` (Optionally append the --release flag for better runtime
       performance)
 
+- Execution intruction:
+    - `cargo run <population count> <differential weight> <cross compatibility>`
+
+- How to interpret the output
+    - The program will output `GENERATIONS` lines to stdout
+    - each line contains that generation's fittest candidate's fitness
+    - Plug that into your favourite data visualisation software
+    
 ## Special thanks
 
 - Wikipedia, for their [excellent article](https://en.wikipedia.org/wiki/Differential_evolution)

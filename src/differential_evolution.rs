@@ -7,37 +7,59 @@ pub struct DEConfig {
     crossover_compatibility: f32,
     differential_weight: f32,
     dimensions: u32,
+    lower_weight: f32,
+    upper_weight: f32,
+    weight_mutate_probability: f32,
+    cross_compat_mutate_probability: f32,
     seed: u64,
 }
 
 #[derive(Clone)]
 pub struct Agent {
     data: Vec<f32>,
+    config: DEConfig,
 }
 
 pub struct DifferentialEvolution {
     agents: Vec<Agent>,
-    config: DEConfig,
     randomizer: SmallRng,
+    config: DEConfig,
 }
 
 impl Agent {
     fn with_data(data: &[f32]) -> Self {
         Agent {
             data: data.to_vec(),
+            config: DEConfig::default(),
+        }
+    }
+
+    #[allow(dead_code)]
+    fn set_config(mut self, config: DEConfig) -> Self {
+        self.config = config;
+        self
+    }
+    
+    fn mutate_config(&mut self, rng: &mut SmallRng) {
+        if rng.random::<f32>() < self.config.weight_mutate_probability {
+            self.config.differential_weight = self.config.lower_weight + rng.random::<f32>() * self.config.upper_weight;
+        }
+        if rng.random::<f32>() < self.config.cross_compat_mutate_probability {
+            self.config.crossover_compatibility = rng.random::<f32>();
         }
     }
 
     // https://en.wikipedia.org/wiki/Differential_evolution#Algorithm
-    fn mutate(&mut self, references: &[Agent], rng: &mut SmallRng, de_config: &DEConfig) {
+    fn mutate(&mut self, references: &[Agent], rng: &mut SmallRng) {
+        self.mutate_config(rng);
         let r_index = rng.random_range(0..self.data.len()); // IDK how to name this, ask Wikipedia
         for (index, agent_data) in self.data.iter_mut().enumerate() {
-            if index != r_index && rng.random::<f32>() > de_config.crossover_compatibility {
+            if index != r_index && rng.random::<f32>() > self.config.crossover_compatibility {
                 continue;
             }
             // y_i = a_i + F * (b_i - c_i)
             *agent_data = references[0].data[index]
-                + (de_config.differential_weight
+                + (self.config.differential_weight
                     * (references[1].data[index] - references[2].data[index]));
         }
     }
@@ -55,6 +77,10 @@ impl Default for DEConfig {
             crossover_compatibility: 0.9,
             differential_weight: 0.8,
             dimensions: 2,
+            lower_weight: 0.1,
+            upper_weight: 0.9,
+            weight_mutate_probability: 0.1,
+            cross_compat_mutate_probability: 0.1,
             seed: 0,
         }
     }
@@ -89,6 +115,26 @@ impl DEConfig {
         self.dimensions = dimensions;
         self
     }
+
+    pub fn set_cross_compat_mutate_probability(mut self, cross_compat_mutate_probability: f32) -> Self {
+        self.cross_compat_mutate_probability = cross_compat_mutate_probability;
+        self
+    }
+
+    pub fn set_weight_mutate_probability(mut self, weight_mutate_probability: f32) -> Self {
+        self.weight_mutate_probability = weight_mutate_probability;
+        self
+    }
+
+    pub fn set_lower_weight(mut self, lower_weight: f32) -> Self {
+        self.lower_weight = lower_weight;
+        self
+    }
+
+    pub fn set_upper_weight(mut self, upper_weight: f32) -> Self {
+        self.upper_weight = upper_weight;
+        self
+    }
 }
 
 impl DifferentialEvolution {
@@ -102,7 +148,7 @@ impl DifferentialEvolution {
         }
 
         Self {
-            config: config,
+            config,
             agents,
             randomizer: rng,
         }
@@ -129,7 +175,7 @@ impl DifferentialEvolution {
                 self.agents[indices[2]].clone(),
             ];
 
-            candidate.mutate(&references, &mut self.randomizer, &self.config);
+            candidate.mutate(&references, &mut self.randomizer);
 
             if candidate.fitness() > baseline {
                 continue;

@@ -27,7 +27,12 @@ fn main() {
             .set_differential_weight(differential_weight)
             .set_crossover_compatibility(cross_compatibility)
             .set_dimensions(3)
-            .set_seed(rng.random());
+            .set_seed(rng.random())
+            // jDE stuff
+            .set_cross_compat_mutate_probability(0.1)
+            .set_weight_mutate_probability(0.1)
+            .set_lower_weight(0.1)
+            .set_upper_weight(0.1);
         let mut differential_evolution = DifferentialEvolution::new(config);
         for _generation in 0..GENERATIONS {
             let best_fitness = differential_evolution.get_fittest_candidate().unwrap().fitness();

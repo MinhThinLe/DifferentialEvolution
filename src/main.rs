@@ -4,7 +4,7 @@ use differential_evolution::*;
 use rand::Rng;
 use std::env;
 
-const RUNS: usize = 500;
+const RUNS: usize = 30;
 const GENERATIONS: usize = 100;
 
 fn main() {
